@@ -35,6 +35,14 @@ LOG_FIELDS = ["step", "tokens", "train_loss", "val_loss", "val_smollm", "val_tin
               "lr", "grad_norm", "tokens_per_sec", "mem_gb", "elapsed_s"]
 
 
+def eta_hours(it: int, stop_iter: int, tokens_per_iter: int, tokens_per_sec: float) -> float:
+    """剩余训练时间（小时）。按 stop_iter 算而不是 max_iters：
+    用 --stop_iter 分段训练或 --resume 续训时，ETA 才是"到这次要停的地方"还剩多久。"""
+    if tokens_per_sec <= 0:
+        return float("inf")
+    return max(stop_iter - it, 0) * tokens_per_iter / tokens_per_sec / 3600
+
+
 def build_model(cfg: dict) -> GPT:
     """model 小节：preset 给出层/维/头，其余键（block_size、dropout……）直接传给 GPTConfig。"""
     m = dict(cfg["model"])
@@ -204,8 +212,10 @@ def train(cfg: dict, resume: bool = False, overfit: bool = False) -> dict[str, f
                     "val_smollm": losses.get("val_smollm"),
                     "val_tinystories": losses.get("val_tinystories"),
                     "lr": get_lr(it, tc), "mem_gb": mem, "elapsed_s": elapsed})
+        per_source = ", ".join(f"{s} {losses[f'val_{s}']:.4f}"
+                               for s in cfg["data"]["sources"])
         print(f"[eval] step {it}: train {losses['train']:.4f} | val {losses['val']:.4f} "
-              f"(smollm {losses['val_smollm']:.4f}, tinystories {losses['val_tinystories']:.4f})")
+              f"({per_source})")
         if losses["val"] < best_val:
             best_val = losses["val"]
             save_checkpoint(str(run_dir / "ckpt_best.pt"), raw_model, optimizer, it, best_val,
@@ -229,13 +239,15 @@ def train(cfg: dict, resume: bool = False, overfit: bool = False) -> dict[str, f
 
         # 梯度累积：把一个大 batch 拆成 accum 个 micro-batch 依次前向/反向。
         # backward 会把梯度累加到 .grad 上，loss 先除以 accum，累加结果才等于大 batch 的平均梯度。
-        loss_sum = 0.0
+        # loss 全程留在显存里累加，只在写日志时 .item() 同步一次；
+        # 原来每个 micro-batch 都 .item()，会强制 GPU 与 CPU 同步，拖慢训练。
+        loss_total = torch.zeros((), device=device)
         for _ in range(accum):
             x, y = fixed_batch if overfit else get_batch(train_paths, mix, B, T, device, data_rng)
             with autocast(cfg, device):
                 _, loss = model(x, y)
             (loss / accum).backward()
-            loss_sum += loss.item()  # 记录未除以 accum 的值，日志里才是真实 loss
+            loss_total = loss_total + loss.detach().float()  # 记录未除以 accum 的值，日志里才是真实 loss
 
         # 梯度裁剪：总范数超过 grad_clip 时整体等比缩小，防止偶发的大梯度把参数"打飞"。
         # 返回值是裁剪前的范数，记进日志方便排查不稳定。
@@ -258,8 +270,8 @@ def train(cfg: dict, resume: bool = False, overfit: bool = False) -> dict[str, f
             elapsed += dt
             tok_s = tok_since / dt
             mem = torch.cuda.max_memory_allocated() / 1e9 if device == "cuda" else 0.0
-            eta_h = (tc["max_iters"] - it) * tokens_per_iter / tok_s / 3600
-            train_loss = loss_sum / accum
+            eta_h = eta_hours(it, stop_iter, tokens_per_iter, tok_s)
+            train_loss = (loss_total / accum).item()
             logger.log({"step": it, "tokens": it * tokens_per_iter, "train_loss": train_loss,
                         "lr": lr, "grad_norm": grad_norm, "tokens_per_sec": tok_s,
                         "mem_gb": mem, "elapsed_s": elapsed})
