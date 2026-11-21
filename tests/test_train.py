@@ -16,7 +16,7 @@ import torch
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
-from train import train  # noqa: E402
+from train import eta_hours, train  # noqa: E402
 from utils import get_lr, load_config  # noqa: E402
 
 LR_CFG = {"lr": 1e-3, "min_lr": 1e-4, "warmup_iters": 10, "max_iters": 100}
@@ -30,6 +30,15 @@ def test_lr_schedule() -> None:
     assert all(a >= b for a, b in zip(lrs[10:100], lrs[11:101]))  # cosine 单调降
     assert lrs[55] == pytest.approx((1e-3 + 1e-4) / 2)  # 正中间 = 平均值
     assert lrs[100] == lrs[119] == pytest.approx(1e-4)  # 之后停在 min_lr
+
+
+def test_eta_uses_stop_iter() -> None:
+    """ETA 按 stop_iter 算：分段训练/续训时，剩余时间不该按 max_iters 估。"""
+    # 1000 token/步、1000 token/s：还剩 40 步 = 40 秒
+    assert eta_hours(10, 50, 1000, 1000) == pytest.approx(40 / 3600)
+    assert eta_hours(50, 50, 1000, 1000) == 0
+    assert eta_hours(60, 50, 1000, 1000) == 0  # 已超过 stop_iter 也不会变成负数
+    assert eta_hours(0, 50, 1000, 1000) == pytest.approx(50 / 3600)
 
 
 def test_load_config_overrides() -> None:
@@ -115,3 +124,23 @@ def test_resume_matches_uninterrupted(tmp_path: Path, cpu_only: None) -> None:
     assert steps[-1] == 10 and (run / "loss_curve.png").exists()
     assert (run / "ckpt_tok0M.pt").exists()  # 1000 token 阈值
     assert not math.isnan(resumed["val"])
+
+
+def test_single_source_run(tmp_path: Path, cpu_only: None) -> None:
+    """只有一个来源时（消融实验「只用 TinyStories」），评估打印和日志不能崩。"""
+    cfg = _tiny_setup(tmp_path)
+    cfg["name"] = "tiny_tts"
+    cfg["data"]["sources"] = ["tinystories"]
+    cfg["train"]["max_iters"] = 2
+    cfg["train"]["eval_interval"] = 1
+    losses = train(copy.deepcopy(cfg))
+
+    assert "val_tinystories" in losses and "val_smollm" not in losses
+    assert math.isfinite(losses["val"]) and math.isfinite(losses["train"])
+
+    run = Path(cfg["out_dir"]) / "tiny_tts"
+    rows = (run / "log.csv").read_text(encoding="utf-8").splitlines()
+    header = rows[0].split(",")
+    assert "val_smollm" in header  # 列保留，但这一来源没有值
+    idx = header.index("val_tinystories")
+    assert any(line.split(",")[idx] for line in rows[1:])

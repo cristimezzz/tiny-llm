@@ -1,0 +1,28 @@
+# 组员 B 消融：只用 TinyStories（去掉 SmolLM）。
+# 其余与 s10m_ctl 完全相同；只有一个来源时 mix 自然归一化为 1.0，
+# 所以只有 val_tinystories，日志里的 val_smollm 列留空。
+name: s10m_tts
+out_dir: runs
+model: { preset: s10m, vocab_size: 8192, block_size: 512, dropout: 0.0, bias: true, grad_ckpt: false }
+data:
+  dir: data/processed
+  sources: [tinystories]
+  mix: natural
+train:
+  batch_size: 64
+  grad_accum: 4
+  max_iters: 2290             # 3 亿 token ≈ TinyStories 训练集的 0.62 轮
+  stop_iter: null
+  lr: 1.0e-3
+  min_lr: 1.0e-4
+  warmup_iters: 200
+  weight_decay: 0.1
+  betas: [0.9, 0.95]
+  grad_clip: 1.0
+  eval_interval: 200
+  eval_iters: 50
+  ckpt_tokens: [1.0e+8, 3.0e+8, 1.0e+9]
+  log_interval: 10
+seed: 1337
+dtype: bfloat16
+compile: true

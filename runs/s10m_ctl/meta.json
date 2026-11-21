@@ -1,0 +1,163 @@
+{
+  "tokenizer": "bpe",
+  "tokenizer_file": "tokenizer.json",
+  "vocab_size": 8192,
+  "eot_id": 0,
+  "dtype": "uint16",
+  "shards": "all",
+  "val_frac": 0.005,
+  "seed": 1337,
+  "tok_train_chars": 400000000,
+  "sources": {
+    "smollm": {
+      "repo": "ecreeth/1b-smollm-corpus",
+      "files": [
+        {
+          "file": "train-00000-of-00009.parquet",
+          "bytes": 308355479,
+          "sha256": "1717c4df0be91a0ad0140e86cd335a6258963f36052786df070767d572836141"
+        },
+        {
+          "file": "train-00001-of-00009.parquet",
+          "bytes": 308497991,
+          "sha256": "f9ebd0d5d5bcf9e1bbe27f44fc691d98445568820566e5380c51701ef7d9a6a3"
+        },
+        {
+          "file": "train-00002-of-00009.parquet",
+          "bytes": 308442482,
+          "sha256": "bee768a2a790dfd6eeca4ff0bb95bdbb5527bd9141fa87238d0a2dee0a83c13d"
+        },
+        {
+          "file": "train-00003-of-00009.parquet",
+          "bytes": 308169286,
+          "sha256": "0242705280031163db43532255e42d7a2ca204ffb5bc999607301bbdc8e67b37"
+        },
+        {
+          "file": "train-00004-of-00009.parquet",
+          "bytes": 308641571,
+          "sha256": "d93e016a79f02b584e0352eceb764f8a708357da2e13d2597a85fe4b2401bff7"
+        },
+        {
+          "file": "train-00005-of-00009.parquet",
+          "bytes": 308682733,
+          "sha256": "0a882dc66c084fe4b0a21ec84655a7011fcb0a5f26b281f9bc91f30877ee63a2"
+        },
+        {
+          "file": "train-00006-of-00009.parquet",
+          "bytes": 308592919,
+          "sha256": "5a7ab044b192864361d641a9e60d589550039acda3426a40453f82673456065b"
+        },
+        {
+          "file": "train-00007-of-00009.parquet",
+          "bytes": 308340660,
+          "sha256": "24afc645177443fc8dee272b66a65a5d7461d36e5f5b9a1dc64caaf1d79697d0"
+        },
+        {
+          "file": "train-00008-of-00009.parquet",
+          "bytes": 206020195,
+          "sha256": "0af763ed32eafa4c70668088bfcbf7fc9affdd23e00371cc0149a9ee3ed5d8b3"
+        }
+      ],
+      "train_tokens": 1145639931,
+      "val_tokens": 5663457,
+      "train_docs": 1002369,
+      "val_docs": 4966,
+      "dropped": {
+        "train": {
+          "non_ascii": 841,
+          "mojibake": 3155,
+          "too_short": 135
+        },
+        "val": {}
+      },
+      "chars_per_token": 3.902
+    },
+    "tinystories": {
+      "repo": "roneneldan/TinyStories",
+      "files": [
+        {
+          "file": "data/train-00000-of-00004-2d5a1467fff1081b.parquet",
+          "bytes": 248731111,
+          "sha256": "77cf780cebe52b6e83e3a2ac84bc56d8059363113e41d17a023f1d8b2ed0fc0b"
+        },
+        {
+          "file": "data/train-00001-of-00004-5852b56a2bd28fd9.parquet",
+          "bytes": 248171980,
+          "sha256": "e2f173a6dcc2b5895183e8ad376e115bd5c06764eb0cfc01ce1add156b2d017f"
+        },
+        {
+          "file": "data/train-00002-of-00004-a26307300439e943.parquet",
+          "bytes": 245894874,
+          "sha256": "cac73cd1a0973a7fccde022a5a5c78f8ba58ea6849541835c58e7c5fc747f2ef"
+        },
+        {
+          "file": "data/train-00003-of-00004-d243063613e5a057.parquet",
+          "bytes": 247988350,
+          "sha256": "862514ae75723ddd339337f1ef7617b88f82290dcddd57445e1d38d257ca7891"
+        },
+        {
+          "file": "data/validation-00000-of-00001-869c898b519ad725.parquet",
+          "bytes": 9989127,
+          "sha256": "33406a6206554cfc279c29c11f4df51528af487aa1a602b075566fc83c49dcab"
+        }
+      ],
+      "train_tokens": 484538699,
+      "val_tokens": 4871561,
+      "train_docs": 2118936,
+      "val_docs": 21983,
+      "dropped": {
+        "train": {
+          "non_ascii": 147,
+          "mojibake": 406,
+          "empty": 230
+        },
+        "val": {
+          "mojibake": 4,
+          "non_ascii": 3
+        }
+      },
+      "chars_per_token": 3.935
+    }
+  },
+  "mix_weights": {
+    "smollm": 0.7028,
+    "tinystories": 0.2972
+  },
+  "examples": {
+    "Once upon a time": [
+      "Once",
+      "Ġupon",
+      "Ġa",
+      "Ġtime"
+    ],
+    "Photosynthesis converts light energy into chemical energy stored in glucose.": [
+      "Ph",
+      "ot",
+      "osy",
+      "nt",
+      "hesis",
+      "Ġconver",
+      "ts",
+      "Ġlight",
+      "Ġenergy",
+      "Ġinto",
+      "Ġchemical",
+      "Ġenergy",
+      "Ġstored",
+      "Ġin",
+      "Ġgluc",
+      "ose",
+      "."
+    ]
+  },
+  "samples": {
+    "smollm": [
+      "Welcome to our latest unit all about exploring the wonderful world of books and how they can shape our lives! We will dive into different stories, characters, and themes while learning about what makes each book unique and memorable. By the end of this unit, you'll have a better understanding of why",
+      "As technology becomes more and more integrated in every aspect of our lives, it is inevitable that large amounts of electronic devices are bought and equally large amounts of electronic devices are rendered obsolete. There is an obvious upsurge in e-waste such as semi-conductors, sensors, monitors, "
+    ],
+    "tinystories": [
+      "Once upon a time, there was a big black cat. The black cat lived in a pretty garden with many flowers. The black cat liked to play in the garden all day.\n\nOne day, a small brown dog came to the garden. The black cat saw the dog and paused. The dog saw the cat and said, \"This is my garden now!\" The b",
+      "Once upon a time, there lived a nice man called Joe. One day Joe wanted to do something special. He went to the pet shop and bought a white kitten. Joe was very happy, he loved the little white kitten.\n\nJoe went home and showed the little white kitten to his son. The little boy was so excited, he sa"
+    ]
+  }
+}
