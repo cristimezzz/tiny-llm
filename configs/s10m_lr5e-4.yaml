@@ -1,0 +1,27 @@
+# 组员 B 消融：学习率 ×0.5（s10m 的 lr 1.0e-3 → 5.0e-4）。
+# 只改 lr / min_lr，其余（数据、步数、warmup、seed、有效 batch）与 s10m_ctl 完全相同。
+name: s10m_lr5e-4
+out_dir: runs
+model: { preset: s10m, vocab_size: 8192, block_size: 512, dropout: 0.0, bias: true, grad_ckpt: false }
+data:
+  dir: data/processed
+  sources: [smollm, tinystories]
+  mix: natural
+train:
+  batch_size: 64
+  grad_accum: 4
+  max_iters: 2290
+  stop_iter: null
+  lr: 5.0e-4
+  min_lr: 5.0e-5
+  warmup_iters: 200
+  weight_decay: 0.1
+  betas: [0.9, 0.95]
+  grad_clip: 1.0
+  eval_interval: 200
+  eval_iters: 50
+  ckpt_tokens: [1.0e+8, 3.0e+8, 1.0e+9]
+  log_interval: 10
+seed: 1337
+dtype: bfloat16
+compile: true
