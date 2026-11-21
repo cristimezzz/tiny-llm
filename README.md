@@ -165,6 +165,7 @@ python app/app.py --preload all      # 备用：Gradio 版界面，功能相同�
 - **实验 A（模型规模）**：参数越多 val loss 越低，但收益递减（s10m→s50m 降 0.555，s50m→s100m 只降 0.134）。相同已训练 token 数下大模型也更低。五人盲评：故事在 0.05B 就到顶，说明文到 0.1B 还在进步。
 - **实验 B（采样参数）**：greedy / 低温度会整句复读，T=1.5 会编出不存在的词；top-k=50 能在高温下兜底。推荐 T=0.7–0.8 + top-k=50。
 - **实验 C（字符级 vs BPE）**：不同分词器的 loss 不能直接比，要换成 bits-per-byte。相同 token 预算下 BPE 更好（SmolLM 1.367 vs 1.602 bpb）。
+- **实验 D（训练设置）**：s10m 上 lr 2e-3 比 1e-3 好（3.094 → 2.975），5e-4 欠拟合（3.256）；只用 TinyStories 把 TinyStories val 从 1.849 降到 1.559，但失去 SmolLM 能力。本机对照与云端 s10m 只差 0.13%。
 
 完整结果、图表、样例和盲评见 [docs/report/experiments.md](docs/report/experiments.md)。模型结构和参数量见 [docs/report/model.md](docs/report/model.md)。
 

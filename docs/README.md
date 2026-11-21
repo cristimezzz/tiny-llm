@@ -50,7 +50,7 @@ docs/
 |---|---|
 | [data.md](report/data.md) | 数据集说明：来源、许可、下载文件与 sha256、清洗与丢弃统计、分词器、token 数 |
 | [model.md](report/model.md) | 模型结构图（含 Block 内张量形状）、按组件的参数量统计、训练设置表 |
-| [experiments.md](report/experiments.md) | 实验 A/B/C 的结果、图表、生成样例、盲评和结论 |
+| [experiments.md](report/experiments.md) | 实验 A/B/C/D 的结果、图表、生成样例、盲评和结论 |
 
 ### defense/：答辩
 
